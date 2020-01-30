@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VariablesViewState
+   version = "1.0">
+   <ContextStates>
+      <ContextState
+         contextName = "APIProvider.getBeers(page:):APIProvider.swift">
+      </ContextState>
+      <ContextState
+         contextName = "BeerInfoViewController._configureBookmark():BeerInfoViewController.swift">
+      </ContextState>
+      <ContextState
+         contextName = "BreweryInfoViewController._configureTableView():BreweryInfoViewController.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "self._breweryInfoViewModel.data.value">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "BreweryDBProvider.download(url:completionHandler:):BreweryDBProvider.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "img">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "BeerViewController.viewDidLoad():BeerViewController.swift">
+      </ContextState>
+      <ContextState
+         contextName = "BreweryInfoViewController.prepare(for:sender:):BreweryInfoViewController.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "segue.identifier">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "APIProvider._beer_request(requestParams:):APIProvider.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "provider">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "BreweryDBService.task.getter:BreweryDBService.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "type.rawValue">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "static MoyaProvider.defaultEndpointMapping(for:):MoyaProvider+Defaults.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "target.task">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "BreweryDBService.path.getter:BreweryDBService.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "&quot;/\(typeOfData.rawValue)/\(breweryId)/beers&quot;">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+   </ContextStates>
+</VariablesViewState>
