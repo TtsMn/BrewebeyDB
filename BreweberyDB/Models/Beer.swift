@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  Beer.swift
 //  BeerWiki
 //
 //  Created by Tyts on 26.01.2020.
@@ -8,20 +8,31 @@
 
 import Foundation
 
-struct BDBBeerResponse: Codable & BDBDataProtocol{
+struct Beer: Codable & DataProtocol{
 
     var id: String          //The unique id of the beer.
     var name: String        //The name of the beer.
     var nameDisplay: String //Display name of the beer.
     var description: String? //The description of the beer.
-    let labels: BeerLabelsResponse?      //If this object is set then labels exist and it will contain items icon, medium, and large that are URLs to the images.
+    let labels: BeerLabels?      //If this object is set then labels exist and it will contain items icon, medium, and large that are URLs to the images.
+    
     static func type() -> typeOfData {
         return .beer
     }
+}
+
+enum BeerImageSize: String {
+    
+    case icon
+    case medium
+    case large
+    case contentAwareIcon
+    case contentAwareMedium
+    case contentAwareLarge
     
 }
 
-struct BeerLabelsResponse: Codable {
+struct BeerLabels: Codable {
     let icon: String?
     let medium: String?
     let large: String?

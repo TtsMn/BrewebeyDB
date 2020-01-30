@@ -10,6 +10,6 @@ import UIKit
 
 class BreweryTableViewCell: UITableViewCell {
     
-    public var brewery: BDBBreweryResponse? = nil
+    public var brewery: Brewery? = nil
 
 }

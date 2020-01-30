@@ -13,13 +13,14 @@ import Moya
 
 class BreweryInfoViewModel {
         
-    private let _disposeBag = DisposeBag()
-    private var _breweryDBProvider = BreweryDBProvider<BDBBeerResponse>()
-    public var data = BehaviorRelay<[BDBBeerResponse]>(value: [BDBBeerResponse]())
-    
+    public let disposeBag = DisposeBag()
+    private var _breweryDBProvider = BreweryDBProvider<Beer>()
+    public var data = BehaviorRelay<[Beer]>(value: [Beer]())
     
     init(breweryId: String) {
+        
         self.request(breweryId: breweryId)
+        
     }
     
     public func request(breweryId: String) {
@@ -31,6 +32,6 @@ class BreweryInfoViewModel {
                     print(data.count)
                         self.data.accept(data)
                     }
-            }).disposed(by: self._disposeBag)
+            }).disposed(by: self.disposeBag)
     }
 }

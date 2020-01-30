@@ -19,7 +19,7 @@ class BeerViewController: UIViewController {
     
     private let _cellReuseIdentifer = "beerCell"
     private let _disposeBag = DisposeBag()
-    private var beersViewModel: BeerViewModel<BDBBeerResponse>!
+    private var beersViewModel: BeerViewModel<Beer>!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -61,7 +61,7 @@ class BeerViewController: UIViewController {
         self.beersViewModel.data.bind(to: self.tableView.rx.items(cellIdentifier: self._cellReuseIdentifer, cellType: BeerTableViewCell.self)) { row, beer, cell in
             cell.beer = beer
             cell.ttlLabel?.text = beer.nameDisplay
-            cell.loadThumbnail()
+            cell.configureImage()
 
             if self.beersViewModel.data.value.count - 20 < row {
                 self.beersViewModel.nextPage()

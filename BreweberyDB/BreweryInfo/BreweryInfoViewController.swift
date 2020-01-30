@@ -15,16 +15,15 @@ class BreweryInfoViewController: UIViewController {
     @IBOutlet weak var tableView: UITableView!
     
     private let _cellReuseIdentifer = "breweryBeerCell"
-    private let _disposeBag = DisposeBag()
-    private var _breweryInfoViewModel: BreweryInfoViewModel!
-    private let _provider = BreweryDBProvider<BDBBeerResponse>()
-    public var brewery: BDBBreweryResponse!
+    private var _viewModel: BreweryInfoViewModel!
+    public var brewery: Brewery!
     
     override func viewDidLoad() {
         guard let brewery = self.brewery else { return }
-        
+       
         super.viewDidLoad()
-        self._breweryInfoViewModel = BreweryInfoViewModel(breweryId: brewery.id)
+        
+        self._viewModel = BreweryInfoViewModel(breweryId: brewery.id)
         self.navigationItem.title = brewery.name
         self._configureTableView()
         self._configureImage()
@@ -32,29 +31,30 @@ class BreweryInfoViewController: UIViewController {
     }
 
     private func _configureTableView() -> Void {
-        self._breweryInfoViewModel.data.bind(to: self.tableView.rx.items(cellIdentifier: self._cellReuseIdentifer, cellType: BreweryBeerTableViewCell.self)) { row, beer, cell in
+        
+        self._viewModel.data.bind(to: self.tableView.rx.items(cellIdentifier: self._cellReuseIdentifer, cellType: BreweryInfoTableViewCell.self)) { row, beer, cell in
             cell.beer = beer
             cell.ttlLabel?.text = beer.name
-            cell.loadThumbnail()
+            cell.configureImage()
 
-        }.disposed(by: self._disposeBag)
+        }.disposed(by: self._viewModel.disposeBag)
     }
     
     private func _configureImage() -> Void {
-        
-        if let lbls = self.brewery?.images,
-            let imageURLString = lbls.squareLarge {
-            self._provider.download(url: imageURLString) { (img) in
-                self.icon.image = img
+        if let labels = self.brewery?.images,
+            let imageURLString = labels.squareLarge {
+            ImageProvider.image(url: imageURLString) { (image) in
+                self.icon.image = image
             }
         }
     }
     
     // MARK: - Navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        
         if segue.identifier == "showBeerInfoFromBreweryInfo",
             let beerVC = segue.destination as? BeerInfoViewController,
-            let cell = sender as? BreweryBeerTableViewCell {
+            let cell = sender as? BreweryInfoTableViewCell {
             beerVC.beer = cell.beer
         }
     }

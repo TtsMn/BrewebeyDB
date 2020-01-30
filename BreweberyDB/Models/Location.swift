@@ -1,6 +1,6 @@
 //
 //  DBD.swift
-//  DBDLocationResponse
+//  Location
 //
 //  Created by Tyts on 30.01.2020.
 //  Copyright © 2020 Tyts&Co. All rights reserved.
@@ -8,14 +8,15 @@
 
 import Foundation
 
-class DBDLocationResponse: Codable & BDBDataProtocol {
+class Location: Codable & DataProtocol {
+    
     var id: String
     let name: String
-    let brewery: BDBBreweryResponse
-    
+    var description: String?
+    let brewery: Brewery?
     
     static func type() -> typeOfData {
-        return .area
+        return .location
     }
     
 }

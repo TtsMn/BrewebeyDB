@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct BDBResponse<T: Codable>: Codable {
+struct Response<T: Codable>: Codable {
     let status: String
     let currentPage: Int?
     let numberOfPages: Int?

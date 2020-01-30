@@ -9,12 +9,8 @@
 import Foundation
 import Moya
 
-enum typeOfData: String {
-    case beer = "beer"
-    case brewery = "brewery"
-    case area = ""
-}
 enum BreweryDBService {
+    
     static private let API_URL = "https://sandbox-api.brewerydb.com/v2"
     static private let API_KEY = "9afa41b681412a56a35f4b1a1f523adb"
     
@@ -23,15 +19,11 @@ enum BreweryDBService {
     case search(type: typeOfData, searchString: String, page: Int=1)
     case breweryBeer(type:typeOfData, breweryId: String)
     case breweries(latitude: Float, longitude: Float)
-    
-    case download(url: String)
 }
 
 extension BreweryDBService: TargetType {
     var baseURL: URL {
         switch self {
-        case .download(let url):
-            return URL(string: url)!
         default:
             return URL(string: BreweryDBService.API_URL)!
         }
@@ -47,8 +39,6 @@ extension BreweryDBService: TargetType {
             return "/\(typeOfData.rawValue)/\(breweryId)/beers"
         case .breweries:
             return "/search/geo/point"
-        case .download:
-            return ""
         }
     }
    
@@ -93,9 +83,6 @@ extension BreweryDBService: TargetType {
         case .breweryBeer(_):
             return .requestParameters(parameters: ["key": BreweryDBService.API_KEY],
                                       encoding: encoding)
-            
-        case .download:
-            return .requestPlain
         }
     }
     

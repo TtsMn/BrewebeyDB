@@ -10,7 +10,7 @@ import Foundation
 import RxSwift
 import RxCocoa
 
-class BookmarkService<T: Codable & BDBDataProtocol> {
+class BookmarkService<T: Codable & DataProtocol> {
     
     func searching(searchString: String) -> [T] {
         

@@ -15,10 +15,26 @@ enum dataSource {
     case bookmarks
 }
 
-class BeerViewModel<T: Codable & BDBDataProtocol> {
+class pager {
     
-    private let _disposeBag = DisposeBag()
-    private var _breweryDBProvider = BreweryDBProvider<T>()
+    public var lastSearchString: String
+    public var numberOfPages: Int
+    public var loadedPages: Int
+    public var page: Int
+    
+    
+    init() {
+        self.lastSearchString = ""
+        self.numberOfPages = 1
+        self.loadedPages = 0
+        self.page = 1
+    }
+    
+}
+
+class BeerViewModel<T: Codable & DataProtocol> {
+    
+    private let _breweryDBProvider = BreweryDBProvider<T>()
     private let _bookmarkService: BookmarkService<T> = BookmarkService()
     private let _typeOfData: typeOfData!
     public var dataSource: dataSource!
@@ -26,6 +42,7 @@ class BeerViewModel<T: Codable & BDBDataProtocol> {
     public var searchText: BehaviorRelay<String>!
     public var data: BehaviorRelay<[T]>!
     
+    private let _disposeBag = DisposeBag()
     private var lastSearchString = ""
     private var numberOfPages = 0
     private var loadedPages = 1
@@ -34,6 +51,7 @@ class BeerViewModel<T: Codable & BDBDataProtocol> {
     let loadNextPage = BehaviorRelay(value: 0)
     
     init(typeOfData: typeOfData, dataSource: dataSource = .api) {
+        
         self._typeOfData = typeOfData
         self.changeDataSource(source: dataSource)
         
@@ -50,6 +68,7 @@ class BeerViewModel<T: Codable & BDBDataProtocol> {
             }).disposed(by: self._disposeBag)
         
 
+        // TODO
          loadNextPage.asObservable()
              .throttle(TimeInterval(1), scheduler: MainScheduler.instance)
              .subscribe(
@@ -84,7 +103,7 @@ class BeerViewModel<T: Codable & BDBDataProtocol> {
         
         if self.dataSource == .api {
             
-            let subscriptionHandler: (BDBResponse<T>) -> Void = { [weak self] response in
+            let subscriptionHandler: (Response<T>) -> Void = { [weak self] response in
                 
                 guard let self = self, let numberOfPages = response.numberOfPages else { return }
                 

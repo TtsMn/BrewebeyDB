@@ -21,15 +21,17 @@ class BreweryViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        configureTableView()
+        self._configureTableView()
         
     }
     
-    func configureTableView() -> Void {
+    private func _configureTableView() -> Void {
+        
         self._breweryViewModel.data.bind(to: self.tableView.rx.items(cellIdentifier: self._cellReuseIdentifer, cellType: BreweryTableViewCell.self)) { row, brewery, cell in
             cell.brewery = brewery
             cell.textLabel?.text = brewery.name
         }.disposed(by: self._disposeBag)
+        
     }
 
     // MARK: - Navigation

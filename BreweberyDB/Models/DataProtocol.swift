@@ -1,5 +1,5 @@
 //
-//  BDBDataProtocol.swift
+//  DataProtocol.swift
 //  BrewebeyDB
 //
 //  Created by Tyts on 28.01.2020.
@@ -8,10 +8,21 @@
 
 import Foundation
 
-protocol BDBDataProtocol {
+enum typeOfData: String {
+    
+    case beer
+    case brewery
+    case guild
+    case event
+    case location   //fake data
+    
+}
+
+protocol DataProtocol {
+    
     var id: String { get }
     var name: String { get }
+    var description: String? { get }
     
     static func type() -> typeOfData 
 }
-

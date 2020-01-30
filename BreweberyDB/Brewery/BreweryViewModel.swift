@@ -15,13 +15,13 @@ import RxCoreLocation
 class BreweryViewModel {
     
     private let _disposeBag = DisposeBag()
-    private var _breweryDBProvider = BreweryDBProvider<DBDLocationResponse>()
-//    private var _beerDBProvider = BreweryDBProvider<BDBBeerResponse>()
-    public var data = BehaviorRelay<[BDBBreweryResponse]>(value: [BDBBreweryResponse]())
+    private var _breweryDBProvider = BreweryDBProvider<Location>()
+    public var data = BehaviorRelay<[Brewery]>(value: [Brewery]())
  
     init() {
         
         configureLocationManager()
+        
     }
         
     func configureLocationManager() -> Void {
@@ -39,16 +39,16 @@ class BreweryViewModel {
                 self._breweryDBProvider.getBreweries(latitude: Float(location.coordinate.latitude), longitude: Float(location.coordinate.longitude)).subscribe(onNext: { (response) in
 
                     if let data = response.data {
-                        var breweries = [BDBBreweryResponse]()
+                        var breweries = [Brewery]()
                         data.forEach { (location) in
-                            breweries.append(location.brewery)
+                            if let brewery = location.brewery {
+                                breweries.append(brewery)
+                            }
                         }
                         self.data.accept(breweries)
                     }
                 }).disposed(by: self._disposeBag)
-        })
-            .disposed(by: self._disposeBag)
-
+        }).disposed(by: self._disposeBag)
         
     }
     
