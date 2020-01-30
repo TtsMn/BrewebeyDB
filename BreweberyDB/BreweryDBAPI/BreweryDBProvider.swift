@@ -12,66 +12,38 @@ import RxSwift
 import RxCocoa
 import Moya
 
-class BreweryDBProvider {
+class BreweryDBProvider<T: Codable & BDBDataProtocol>{
     
-    public static let shared = BreweryDBProvider()
     private let provider = MoyaProvider<BreweryDBService>()
-    
-//    private static func _request<T: Codable>(requestParams: BreweryDBService) -> Driver<[T]> {
-//        return provider.rx.request(requestParams)
-//            .filterSuccessfulStatusAndRedirectCodes()
-//            .map(BDBResponse<T>.self)
-//            .filter({ (val) -> Bool in
-//                val.status=="success"
-//            }).map { (val) -> [T] in
-//                (val.data ?? [])
-//        }.asDriver(onErrorJustReturn: [])
-//    }
-//    _request(requestParams: .beers(page: page), type: BDBBeerResponse.self)
-    
-    private func _beer_request(requestParams: BreweryDBService) -> Driver<[BDBBeerResponse]> {
+
+    private func _request(requestParams: BreweryDBService) -> Observable<BDBResponse<T>> {
         return provider.rx.request(requestParams)
             .filterSuccessfulStatusAndRedirectCodes()
-            .map(BDBResponse<BDBBeerResponse>.self)
+            .map(BDBResponse<T>.self)
             .filter({ (val) -> Bool in
-                val.status=="success"
-            }).map { (val) -> [BDBBeerResponse] in
-                (val.data ?? [])
-        }.asDriver(onErrorJustReturn: [])
+                print(val.status)
+                return val.status=="success"
+            }).asObservable()
     }
     
-    private func _brewery_request(requestParams: BreweryDBService) -> Driver<[BDBBeerResponse]> {
-        return provider.rx.request(requestParams)
-            .filterSuccessfulStatusAndRedirectCodes()
-            .map(BDBResponse<BDBBeerResponse>.self)
-            .filter({ (val) -> Bool in
-                val.status=="success"
-            }).map { (val) -> [BDBBeerResponse] in
-                print("\(val.data?.count)")//temp
-                return (val.data ?? [])
-        }.asDriver(onErrorJustReturn: [])
+    func getBeer(beerIds: [String]) -> Observable<BDBResponse<T>> {
+        return self._request(requestParams: .beer(beerIds: beerIds))
     }
     
-    func getBeer(beerId: String, page: Int=1) -> Driver<[BDBBeerResponse]> {
-        print("\(#function)")
-        return _beer_request(requestParams: .beer(beerId: beerId, page: page))
+    func getBeers(page: Int=1) -> Observable<BDBResponse<T>> {
+        return self._request(requestParams: .beers(page: page))
     }
     
-    func getBeers(page: Int=1) -> Driver<[BDBBeerResponse]> {
-        print("\(#function)")
-        return _beer_request(requestParams: .beers(page: page))
+    func search(type:typeOfData, searchString: String, page: Int=1) -> Observable<BDBResponse<T>> {
+        return self._request(requestParams: .search(type: type, searchString: searchString, page: page))
     }
     
-    func getBeersFetch(beerName: String, page: Int=1) -> Driver<[BDBBeerResponse]> {
-        return _beer_request(requestParams: .beersFetch(beerName: beerName, page: page))
+    func getBreweryBeer(breweryId: String) -> Observable<BDBResponse<T>> {
+        return self._request(requestParams: .breweryBeer(type: T.type(), breweryId: breweryId))
     }
     
-    func getBrewery(breweryId: String, page: Int=1) -> Driver<[BDBBeerResponse]> {
-        return _brewery_request(requestParams: .brewery(breweryId: breweryId, page: page))
-    }
-    
-    func getBreweries(latitude: Float, longitude: Float, page: Int=1) -> Driver<[BDBBeerResponse]> {
-        return _brewery_request(requestParams: .breweries(latitude: latitude, longitude: longitude, page: page))
+    func getBreweries(latitude: Float, longitude: Float) -> Observable<BDBResponse<T>> {
+        return self._request(requestParams: .breweries(latitude: latitude, longitude: longitude))
     }
     
     func download(url: String, completionHandler: @escaping (UIImage) -> ()) -> Void {//.subscribe {

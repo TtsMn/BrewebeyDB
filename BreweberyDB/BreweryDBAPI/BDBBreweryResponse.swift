@@ -8,12 +8,16 @@
 
 import Foundation
 
-struct BDBBreweryResponse: Codable{
-    let id: String          //The unique id of the beer.
+struct BDBBreweryResponse: Codable & BDBDataProtocol {
+    var id: String         //The unique id of the beer.
     let name: String        //The name of the beer.
-    let nameShortDisplay: String //Display name of the beer.
+    let nameShortDisplay: String? //Display name of the beer.
     let description: String? //The description of the beer.
-    let labels: BreweryLabelsResponse?  //If this object is set then labels exist and it will contain items icon, medium, and large that are URLs to the images.
+    let images: BreweryLabelsResponse?  //If this object is set then labels exist and it will contain items icon, medium, and large that are URLs to the images.
+    
+    static func type() -> typeOfData {
+        return .brewery
+    }
 }
 
 struct BreweryLabelsResponse: Codable {

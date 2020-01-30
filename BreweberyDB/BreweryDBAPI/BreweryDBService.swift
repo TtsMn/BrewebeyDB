@@ -9,15 +9,20 @@
 import Foundation
 import Moya
 
+enum typeOfData: String {
+    case beer = "beer"
+    case brewery = "brewery"
+    case area = ""
+}
 enum BreweryDBService {
     static private let API_URL = "https://sandbox-api.brewerydb.com/v2"
     static private let API_KEY = "9afa41b681412a56a35f4b1a1f523adb"
     
-    case beer(beerId: String, page: Int=1)
+    case beer(beerIds: [String])
     case beers(page: Int=1)
-    case beersFetch(beerName: String, page: Int=1)
-    case brewery(breweryId: String, page: Int=1)
-    case breweries(latitude: Float, longitude: Float, page: Int=1)
+    case search(type: typeOfData, searchString: String, page: Int=1)
+    case breweryBeer(type:typeOfData, breweryId: String)
+    case breweries(latitude: Float, longitude: Float)
     
     case download(url: String)
 }
@@ -34,14 +39,14 @@ extension BreweryDBService: TargetType {
     
     var path: String {
         switch self {
-        case .beer(let beerId):
-            return "/beer/\(beerId)"
-        case .beers, .beersFetch:
+        case .search:
+            return "/search"
+        case .beer, .beers:
             return "/beers"
-        case .brewery(let breweryId):
-            return "/brewery/\(breweryId)"
+        case .breweryBeer(let typeOfData, let breweryId):
+            return "/\(typeOfData.rawValue)/\(breweryId)/beers"
         case .breweries:
-            return "/breweries"
+            return "/search/geo/point"
         case .download:
             return ""
         }
@@ -60,21 +65,35 @@ extension BreweryDBService: TargetType {
         let encoding = URLEncoding.default
         
         switch self {
-        case .beer(_, let page), .beers(let page), .brewery(_, let page):
+            
+        case .beer(let ids):
+            return .requestParameters(parameters: ["key": BreweryDBService.API_KEY,
+                                                       "ids": ids.joined(separator: ",")],
+                                      encoding: encoding)
+            
+        case .beers(let page):
             return .requestParameters(parameters: ["key": BreweryDBService.API_KEY,
                                                    "p": page],
                                       encoding: encoding)
-        case .beersFetch(let beerName, let page):
+            
+        case .search(let type, let searchString, let page):
             return .requestParameters(parameters: ["key": BreweryDBService.API_KEY,
-                                                   "name": beerName,
+                                                   "type": type.rawValue,
+                                                   "q": searchString,
                                                    "p": page],
                                       encoding: encoding)
-        case .breweries(let latitude, let longitude, let page):
+            
+        case .breweries(let latitude, let longitude):
             return .requestParameters(parameters: ["key": BreweryDBService.API_KEY,
-                                                   "latitude": latitude,
-                                                   "longitude": longitude,
-                                                   "p": page],
+                                                   "lat": String(latitude),
+                                                   "lng": String(longitude),
+                                                   "radius": 100],
                                       encoding: encoding)
+
+        case .breweryBeer(_):
+            return .requestParameters(parameters: ["key": BreweryDBService.API_KEY],
+                                      encoding: encoding)
+            
         case .download:
             return .requestPlain
         }

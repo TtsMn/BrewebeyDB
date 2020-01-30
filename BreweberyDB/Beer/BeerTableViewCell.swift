@@ -8,19 +8,18 @@
 
 import UIKit
 
-class CollectionViewCellTest: UITableViewCell {
+class BeerTableViewCell: UITableViewCell {
     
     @IBOutlet weak var imageCell: UIImageView!
     @IBOutlet weak var ttlLabel: UILabel!
-    @IBOutlet weak var dtlLabel: UILabel!
     
+    private let _provider = BreweryDBProvider<BDBBeerResponse>()
     public var beer: BDBBeerResponse? = nil
-    
     
     func loadThumbnail() -> Void {
         if let lbls = self.beer?.labels,
             let imageURLString = lbls.icon {
-            BreweryDBProvider.shared.download(url: imageURLString) { (img) in
+            self._provider.download(url: imageURLString) { (img) in
                 self.imageCell.image = img
             }
         }
