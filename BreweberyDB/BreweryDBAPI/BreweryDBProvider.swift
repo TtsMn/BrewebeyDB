@@ -21,7 +21,7 @@ class BreweryDBProvider<T: Codable & BDBDataProtocol>{
             .filterSuccessfulStatusAndRedirectCodes()
             .map(BDBResponse<T>.self)
             .filter({ (val) -> Bool in
-                print(val.status)
+                print("\(requestParams) - \(val.status)") // print requests here
                 return val.status=="success"
             }).asObservable()
     }
@@ -38,8 +38,8 @@ class BreweryDBProvider<T: Codable & BDBDataProtocol>{
         return self._request(requestParams: .search(type: type, searchString: searchString, page: page))
     }
     
-    func getBreweryBeer(breweryId: String) -> Observable<BDBResponse<T>> {
-        return self._request(requestParams: .breweryBeer(type: T.type(), breweryId: breweryId))
+    func getBreweryBeer(type: typeOfData, breweryId: String) -> Observable<BDBResponse<T>> {
+        return self._request(requestParams: .breweryBeer(type: type, breweryId: breweryId))
     }
     
     func getBreweries(latitude: Float, longitude: Float) -> Observable<BDBResponse<T>> {

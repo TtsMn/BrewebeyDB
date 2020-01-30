@@ -12,12 +12,6 @@ import RxCocoa
 
 class BookmarkService<T: Codable & BDBDataProtocol> {
     
-//    private let type: typeOfData!
-//
-//    init(type: typeOfData) {
-//        self.type = type
-//    }
-    
     func searching(searchString: String) -> [T] {
         
         return self.getBookmars().filter {

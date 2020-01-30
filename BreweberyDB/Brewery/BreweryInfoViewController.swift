@@ -14,21 +14,25 @@ class BreweryInfoViewController: UIViewController {
     @IBOutlet weak var icon: UIImageView!
     @IBOutlet weak var tableView: UITableView!
     
-    private let _cellReuseIdentifer = "beerCell"
+    private let _cellReuseIdentifer = "breweryBeerCell"
     private let _disposeBag = DisposeBag()
-    private let _beerViewModel = BeerViewModel<BDBBeerResponse>(typeOfData: BDBBeerResponse.type())
+    private var _breweryInfoViewModel: BreweryInfoViewModel!
     private let _provider = BreweryDBProvider<BDBBeerResponse>()
-    public var brewery: BDBBreweryResponse? = nil
+    public var brewery: BDBBreweryResponse!
     
     override func viewDidLoad() {
+        guard let brewery = self.brewery else { return }
+        
         super.viewDidLoad()
-        configureTableView()
-        self.navigationItem.title = brewery?.name
+        self._breweryInfoViewModel = BreweryInfoViewModel(breweryId: brewery.id)
+        self.navigationItem.title = brewery.name
+        self._configureTableView()
         self._configureImage()
+
     }
 
-    func configureTableView() -> Void {
-        self._beerViewModel.data.bind(to: self.tableView.rx.items(cellIdentifier: self._cellReuseIdentifer, cellType: BreweryBeerTableViewCell.self)) { row, beer, cell in
+    private func _configureTableView() -> Void {
+        self._breweryInfoViewModel.data.bind(to: self.tableView.rx.items(cellIdentifier: self._cellReuseIdentifer, cellType: BreweryBeerTableViewCell.self)) { row, beer, cell in
             cell.beer = beer
             cell.ttlLabel?.text = beer.name
             cell.loadThumbnail()
@@ -48,7 +52,7 @@ class BreweryInfoViewController: UIViewController {
     
     // MARK: - Navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "showBeerInfo",
+        if segue.identifier == "showBeerInfoFromBreweryInfo",
             let beerVC = segue.destination as? BeerInfoViewController,
             let cell = sender as? BreweryBeerTableViewCell {
             beerVC.beer = cell.beer

@@ -17,17 +17,19 @@ class BreweryInfoViewModel {
     private var _breweryDBProvider = BreweryDBProvider<BDBBeerResponse>()
     public var data = BehaviorRelay<[BDBBeerResponse]>(value: [BDBBeerResponse]())
     
-    init() {
-        
+    
+    init(breweryId: String) {
+        self.request(breweryId: breweryId)
     }
     
     public func request(breweryId: String) {
         
         self._breweryDBProvider
-            .getBreweryBeer(breweryId:  breweryId)
+            .getBreweryBeer(type: .brewery, breweryId:  breweryId)
             .subscribe(onNext: { response in
-                if let response = response.data {
-                        self.data.accept(response)
+                if let data = response.data {
+                    print(data.count)
+                        self.data.accept(data)
                     }
             }).disposed(by: self._disposeBag)
     }

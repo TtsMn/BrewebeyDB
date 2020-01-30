@@ -19,9 +19,10 @@ class BeerViewModel<T: Codable & BDBDataProtocol> {
     
     private let _disposeBag = DisposeBag()
     private var _breweryDBProvider = BreweryDBProvider<T>()
-    public var _dataSource: dataSource!
-    private var _bookmarkService: BookmarkService<T> = BookmarkService()
-    public let typeOfData: typeOfData!
+    private let _bookmarkService: BookmarkService<T> = BookmarkService()
+    private let _typeOfData: typeOfData!
+    public var dataSource: dataSource!
+    
     public var searchText: BehaviorRelay<String>!
     public var data: BehaviorRelay<[T]>!
     
@@ -29,9 +30,11 @@ class BeerViewModel<T: Codable & BDBDataProtocol> {
     private var numberOfPages = 0
     private var loadedPages = 1
     private var page = 1
+ 
+    let loadNextPage = BehaviorRelay(value: 0)
     
     init(typeOfData: typeOfData, dataSource: dataSource = .api) {
-        self.typeOfData = typeOfData
+        self._typeOfData = typeOfData
         self.changeDataSource(source: dataSource)
         
         self.searchText = BehaviorRelay<String>(value: "")
@@ -45,11 +48,24 @@ class BeerViewModel<T: Codable & BDBDataProtocol> {
             .subscribe(onNext: { (searchString) in
                 self.request(searchString: searchString)
             }).disposed(by: self._disposeBag)
+        
+
+         loadNextPage.asObservable()
+             .throttle(TimeInterval(1), scheduler: MainScheduler.instance)
+             .subscribe(
+             onNext: { page in
+                 self.page = page + 1
+                 self.request(searchString: self.lastSearchString, page: page + 1)
+                 self.loadedPages = page + 1
+         }).disposed(by: self._disposeBag)
     }
     
     public func changeDataSource(source: dataSource?=nil) -> Void {
         if let source = source {
-            self._dataSource = source
+            self.dataSource = source
+            self.page = 1
+            self.loadedPages = 1
+            self.numberOfPages = 0
         }
         
         self.request()
@@ -60,31 +76,29 @@ class BeerViewModel<T: Codable & BDBDataProtocol> {
         guard self.page < self.numberOfPages,
             self.page >= self.loadedPages
             else { return }
-        self.page += 1
-        self.request(searchString: self.lastSearchString, page: self.page)
-        self.loadedPages = self.page
+        loadNextPage.accept(self.page)
         
     }
     
     public func request(searchString: String="", page: Int=1) -> Void {
         
-        if self._dataSource == .api {
+        if self.dataSource == .api {
             
             let subscriptionHandler: (BDBResponse<T>) -> Void = { [weak self] response in
                 
-                guard let self = self else { return }
+                guard let self = self, let numberOfPages = response.numberOfPages else { return }
                 
                 self.lastSearchString = searchString
                 self.page = page
-                self.numberOfPages = response.numberOfPages
+                self.numberOfPages = numberOfPages
                 
-                if var response = response.data {
+                if var data = response.data {
                     if page > 1 {
-                        var sourceArray = self.data.value
-                        sourceArray.append(contentsOf: response)
-                        response = sourceArray
+                        var myData = self.data.value
+                        myData.append(contentsOf: data)
+                        data = myData
                     }
-                    self.data.accept(response)
+                    self.data.accept(data)
                 }
             }
             
@@ -97,14 +111,14 @@ class BeerViewModel<T: Codable & BDBDataProtocol> {
                 
             } else {
                 
-                self._breweryDBProvider.search(type: self.typeOfData, searchString: searchString, page: page)
+                self._breweryDBProvider.search(type: self._typeOfData, searchString: searchString, page: page)
                     .subscribe(onNext: { response in
                         subscriptionHandler(response)
                     }).disposed(by: self._disposeBag)
                 
             }
             
-        } else {
+        } else if self.dataSource == .bookmarks {
             
             let response: [T]
             if searchString.isEmpty {
@@ -117,7 +131,6 @@ class BeerViewModel<T: Codable & BDBDataProtocol> {
         }
         
     }
-    
     
 }
 

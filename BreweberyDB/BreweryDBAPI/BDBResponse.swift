@@ -10,9 +10,9 @@ import Foundation
 
 struct BDBResponse<T: Codable>: Codable {
     let status: String
-    let currentPage: Int
-    let numberOfPages: Int
-    let totalResults: Int
+    let currentPage: Int?
+    let numberOfPages: Int?
+    let totalResults: Int?
     let data: [T]?
 }
 

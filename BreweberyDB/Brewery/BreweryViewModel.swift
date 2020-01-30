@@ -33,12 +33,9 @@ class BreweryViewModel {
         
         manager.rx
             .location
-            .throttle(TimeInterval(1), scheduler: MainScheduler.instance)
+            .throttle(TimeInterval(10), scheduler: MainScheduler.instance)
             .subscribe(onNext: { location in
             guard let location = location else { return }
-            print("altitude: \(location.altitude)")
-            print("latitude: \(location.coordinate.latitude)")
-            print("longitude: \(location.coordinate.longitude)")
                 self._breweryDBProvider.getBreweries(latitude: Float(location.coordinate.latitude), longitude: Float(location.coordinate.longitude)).subscribe(onNext: { (response) in
 
                     if let data = response.data {
