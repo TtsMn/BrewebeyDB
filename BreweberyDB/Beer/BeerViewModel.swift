@@ -15,87 +15,93 @@ enum dataSource {
     case bookmarks
 }
 
-class pager {
-    
-    public var lastSearchString: String
-    public var numberOfPages: Int
-    public var loadedPages: Int
-    public var page: Int
-    
-    
-    init() {
-        self.lastSearchString = ""
-        self.numberOfPages = 1
-        self.loadedPages = 0
-        self.page = 1
-    }
-    
-}
-
 class BeerViewModel<T: Codable & DataProtocol> {
+    
+    private let DELTA = 20
     
     private let _breweryDBProvider = BreweryDBProvider<T>()
     private let _bookmarkService: BookmarkService<T> = BookmarkService()
     private let _typeOfData: typeOfData!
     public var dataSource: dataSource!
     
+    public let disposeBag = DisposeBag()
     public var searchText: BehaviorRelay<String>!
     public var data: BehaviorRelay<[T]>!
+    public var numberOfShownCells: PublishSubject<Int>
+//    public var totalNumberOfCells: Observable<Int>!
     
-    private let _disposeBag = DisposeBag()
     private var lastSearchString = ""
-    private var numberOfPages = 0
+    private var totalCountOfPages = 0
     private var loadedPages = 1
-    private var page = 1
+    private var currentPage = 1
  
     let loadNextPage = BehaviorRelay(value: 0)
     
     init(typeOfData: typeOfData, dataSource: dataSource = .api) {
         
         self._typeOfData = typeOfData
-        self.changeDataSource(source: dataSource)
         
         self.searchText = BehaviorRelay<String>(value: "")
         self.data = BehaviorRelay<[T]>(value: [T]())
+        self.numberOfShownCells = PublishSubject<Int>()
         
+        self._configurePager()
+        self._configureSearchUpdateHandle()
+        self.changeDataSource(source: dataSource)
+
+    }
+    
+    private func _configurePager() -> Void {
+
+        Observable.combineLatest(self.numberOfShownCells, self.data)
+            .throttle(TimeInterval(0.5), scheduler: MainScheduler.instance)
+//        .myDebug(identifier: "pager")
+            .subscribe(onNext: { (numberOfShownCells, data) in
+                if numberOfShownCells > 0,
+                    (data.count - numberOfShownCells) < self.DELTA,
+                    self.totalCountOfPages > self.currentPage,
+                    self.loadedPages <= self.currentPage {
+                    
+                    self.currentPage += 1
+                    self.loadedPages = self.currentPage
+                    self.request(searchString: self.lastSearchString, page: self.currentPage)
+                }
+            }, onError: { (err) in
+                self.numberOfShownCells.onNext(0)
+            }).disposed(by: self.disposeBag)
+
+    }
+    
+    private func _configureSearchUpdateHandle() -> Void {
+                
         self.searchText
             .throttle(TimeInterval(0.3), scheduler: MainScheduler.instance)
             .distinctUntilChanged()
-            .myDebug(identifier: "str")
-            //            .flatMapFirst({ self._search(type: .beer, searchString: $0, page: 1) })// отладка требуется
+            .myDebug(identifier: "search string")
+            //            .flatMapFirst({ self._search(type: .beer, searchString: $0, page: 1) })// fail
             .subscribe(onNext: { (searchString) in
                 self.request(searchString: searchString)
-            }).disposed(by: self._disposeBag)
+            }).disposed(by: self.disposeBag)
         
-
-        // TODO
-         loadNextPage.asObservable()
-             .throttle(TimeInterval(1), scheduler: MainScheduler.instance)
-             .subscribe(
-             onNext: { page in
-                 self.page = page + 1
-                 self.request(searchString: self.lastSearchString, page: page + 1)
-                 self.loadedPages = page + 1
-         }).disposed(by: self._disposeBag)
     }
     
     public func changeDataSource(source: dataSource?=nil) -> Void {
         if let source = source {
             self.dataSource = source
-            self.page = 1
-            self.loadedPages = 1
-            self.numberOfPages = 0
+            self.currentPage = 0
+            self.loadedPages = 0
+            self.totalCountOfPages = 0
+            self.numberOfShownCells.onNext(0)
         }
         
         self.request()
-        
     }
     
     public func nextPage() {
-        guard self.page < self.numberOfPages,
-            self.page >= self.loadedPages
+        guard self.currentPage < self.totalCountOfPages,
+            self.currentPage >= self.loadedPages
             else { return }
-        loadNextPage.accept(self.page)
+        loadNextPage.accept(self.currentPage)
         
     }
     
@@ -108,8 +114,8 @@ class BeerViewModel<T: Codable & DataProtocol> {
                 guard let self = self, let numberOfPages = response.numberOfPages else { return }
                 
                 self.lastSearchString = searchString
-                self.page = page
-                self.numberOfPages = numberOfPages
+                self.currentPage = page
+                self.totalCountOfPages = numberOfPages
                 
                 if var data = response.data {
                     if page > 1 {
@@ -126,14 +132,14 @@ class BeerViewModel<T: Codable & DataProtocol> {
                 self._breweryDBProvider.getBeers(page: page)
                     .subscribe(onNext: { response in
                         subscriptionHandler(response)
-                    }).disposed(by: self._disposeBag)
+                    }).disposed(by: self.disposeBag)
                 
             } else {
                 
                 self._breweryDBProvider.search(type: self._typeOfData, searchString: searchString, page: page)
                     .subscribe(onNext: { response in
                         subscriptionHandler(response)
-                    }).disposed(by: self._disposeBag)
+                    }).disposed(by: self.disposeBag)
                 
             }
             

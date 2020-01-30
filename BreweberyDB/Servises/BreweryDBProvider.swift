@@ -20,7 +20,7 @@ class BreweryDBProvider<T: Codable & DataProtocol>{
             .filterSuccessfulStatusAndRedirectCodes()
             .map(Response<T>.self)
             .filter({ (val) -> Bool in
-                print("\(requestParams) - \(val.status)") // print requests here
+                print("status: \(val.status) / params: \(requestParams) / results: \(val.data?.count ?? 0)") // print requests here
                 return val.status=="success"
             }).asObservable()
     }

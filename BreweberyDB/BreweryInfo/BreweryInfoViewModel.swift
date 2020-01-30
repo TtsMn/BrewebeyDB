@@ -29,7 +29,6 @@ class BreweryInfoViewModel {
             .getBreweryBeer(type: .brewery, breweryId:  breweryId)
             .subscribe(onNext: { response in
                 if let data = response.data {
-                    print(data.count)
                         self.data.accept(data)
                     }
             }).disposed(by: self.disposeBag)
