@@ -14,7 +14,7 @@ enum typeOfData: String {
     case brewery
     case guild
     case event
-    case location   //fake data
+    case location   //fake data ni
     
 }
 
