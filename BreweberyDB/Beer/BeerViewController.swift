@@ -19,19 +19,18 @@ class BeerViewController: UIViewController {
     
     private let _cellReuseIdentifer = "beerCell"
 
-    private var _viewModel: BeerViewModel<Beer>!
+    private var _viewModel: BeerViewModel<Beer> = BeerViewModel(typeOfData: .beer)
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        self._viewModel = BeerViewModel(typeOfData: .beer)
-        self._configureNavigationBar()
-        self._configureTableView()
+        self.configureNavigationBar()
+        self.configureTableView()
         
         definesPresentationContext = true
     }
     
-    private func _configureNavigationBar() -> Void {
+    private func configureNavigationBar() -> Void {
        
         self.navigationItem.largeTitleDisplayMode = .never
         self.navigationItem.searchController = _searchController
@@ -56,7 +55,7 @@ class BeerViewController: UIViewController {
 
     }
     
-    private func _configureTableView() -> Void {
+    private func configureTableView() -> Void {
         
         self._viewModel.data.bind(to: self.tableView.rx.items(cellIdentifier: self._cellReuseIdentifer, cellType: BeerTableViewCell.self)) { row, beer, cell in
             cell.beer = beer

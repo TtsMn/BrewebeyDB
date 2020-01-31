@@ -11,11 +11,13 @@ import RxSwift
 import RxCocoa
 import CoreLocation
 import RxCoreLocation
+import Moya
 
 class BreweryViewModel {
     
     private let _disposeBag = DisposeBag()
-    private var _breweryDBProvider = BreweryDBProvider<Location>()
+//    private var _breweryDBProvider = BreweryDBProvider<Location>()
+    private let _dataProvider = MoyaProvider<BreweryDBService<Location>>()
     public var data = BehaviorRelay<[Brewery]>(value: [Brewery]())
  
     init() {
@@ -35,8 +37,14 @@ class BreweryViewModel {
             .location
             .throttle(TimeInterval(10), scheduler: MainScheduler.instance)
             .subscribe(onNext: { location in
-            guard let location = location else { return }
-                self._breweryDBProvider.getBreweries(latitude: Float(location.coordinate.latitude), longitude: Float(location.coordinate.longitude)).subscribe(onNext: { (response) in
+                guard let location = location else { return }
+                
+                self._dataProvider.rx
+                        .request(.geo(latitude: Float(location.coordinate.latitude), longitude: Float(location.coordinate.longitude)))
+                        .filterSuccessfulStatusAndRedirectCodes()
+                        .map(Response<Location>.self)
+                        .filter { $0.status=="success" }
+                        .asObservable().subscribe(onNext: { (response) in
 
                     if let data = response.data {
                         var breweries = [Brewery]()

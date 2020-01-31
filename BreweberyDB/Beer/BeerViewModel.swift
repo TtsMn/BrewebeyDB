@@ -9,6 +9,7 @@
 import Foundation
 import RxSwift
 import RxCocoa
+import Moya
 
 enum dataSource {
     case api
@@ -17,18 +18,18 @@ enum dataSource {
 
 class BeerViewModel<T: Codable & DataProtocol> {
     
-    private let DELTA = 20
+    private let delta = 20
+
+    private let _dataProvider = MoyaProvider<BreweryDBService<T>>()
     
-    private let _breweryDBProvider = BreweryDBProvider<T>()
     private let _bookmarkService: BookmarkService<T> = BookmarkService()
-    private let _typeOfData: typeOfData!
-    public var dataSource: dataSource!
+    private let _dataType: DataType
+    public var dataSource: dataSource
     
     public let disposeBag = DisposeBag()
-    public var searchText: BehaviorRelay<String>!
-    public var data: BehaviorRelay<[T]>!
+    public var searchText: BehaviorRelay<String>
+    public var data: BehaviorRelay<[T]>
     public var numberOfShownCells: PublishSubject<Int>
-//    public var totalNumberOfCells: Observable<Int>!
     
     private var lastSearchString = ""
     private var totalCountOfPages = 0
@@ -37,28 +38,29 @@ class BeerViewModel<T: Codable & DataProtocol> {
  
     let loadNextPage = BehaviorRelay(value: 0)
     
-    init(typeOfData: typeOfData, dataSource: dataSource = .api) {
+    init(typeOfData: DataType, dataSource: dataSource = .api) {
         
-        self._typeOfData = typeOfData
+        self._dataType = typeOfData
+        self.dataSource = dataSource
         
         self.searchText = BehaviorRelay<String>(value: "")
         self.data = BehaviorRelay<[T]>(value: [T]())
         self.numberOfShownCells = PublishSubject<Int>()
         
-        self._configurePager()
-        self._configureSearchUpdateHandle()
+        self.configurePager()
+        self.configureSearchUpdateHandle()
         self.changeDataSource(source: dataSource)
 
     }
     
-    private func _configurePager() -> Void {
+    private func configurePager() -> Void {
 
         Observable.combineLatest(self.numberOfShownCells, self.data)
             .throttle(TimeInterval(0.5), scheduler: MainScheduler.instance)
 //        .myDebug(identifier: "pager")
             .subscribe(onNext: { (numberOfShownCells, data) in
                 if numberOfShownCells > 0,
-                    (data.count - numberOfShownCells) < self.DELTA,
+                    (data.count - numberOfShownCells) < self.delta,
                     self.totalCountOfPages > self.currentPage,
                     self.loadedPages <= self.currentPage {
                     
@@ -72,7 +74,7 @@ class BeerViewModel<T: Codable & DataProtocol> {
 
     }
     
-    private func _configureSearchUpdateHandle() -> Void {
+    private func configureSearchUpdateHandle() -> Void {
                 
         self.searchText
             .throttle(TimeInterval(0.3), scheduler: MainScheduler.instance)
@@ -129,17 +131,25 @@ class BeerViewModel<T: Codable & DataProtocol> {
             
             if searchString.isEmpty {
                 
-                self._breweryDBProvider.getBeers(page: page)
+                self._dataProvider.rx.request(.getList(page: self.currentPage))
+                    .filterSuccessfulStatusAndRedirectCodes()
+                    .map(Response<T>.self)
+                    .filter { $0.status=="success" }
+                    .asObservable()
                     .subscribe(onNext: { response in
-                        subscriptionHandler(response)
-                    }).disposed(by: self.disposeBag)
+                    subscriptionHandler(response)
+                }).disposed(by: self.disposeBag)
                 
             } else {
                 
-                self._breweryDBProvider.search(type: self._typeOfData, searchString: searchString, page: page)
+                self._dataProvider.rx.request(.search(searchString: searchString))
+                    .filterSuccessfulStatusAndRedirectCodes()
+                    .map(Response<T>.self)
+                    .filter { $0.status=="success" }
+                    .asObservable()
                     .subscribe(onNext: { response in
-                        subscriptionHandler(response)
-                    }).disposed(by: self.disposeBag)
+                    subscriptionHandler(response)
+                }).disposed(by: self.disposeBag)
                 
             }
             

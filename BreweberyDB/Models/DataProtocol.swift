@@ -8,13 +8,28 @@
 
 import Foundation
 
-enum typeOfData: String {
+enum DataType: String {
     
     case beer
     case brewery
     case guild
-    case event
-    case location   //fake data ni
+    case event      // deprecated
+    case location   // fake data
+    
+    var single: String {
+        return self.rawValue
+    }
+    
+    var multiple: String {
+        switch self {
+        case .beer:
+            return "beers"
+        case .brewery:
+            return "breweries"
+        default:
+            return ""
+        }
+    }
     
 }
 
@@ -24,5 +39,6 @@ protocol DataProtocol {
     var name: String { get }
     var description: String? { get }
     
-    static func type() -> typeOfData 
+    static var type: DataType { get }
+    
 }

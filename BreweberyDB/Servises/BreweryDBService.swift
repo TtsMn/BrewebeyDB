@@ -7,37 +7,49 @@
 //
 
 import Foundation
+import RxSwift
 import Moya
 
-enum BreweryDBService {
+struct BreweryDB {
+    static let apiUrl: String = "https://sandbox-api.brewerydb.com/v2"
+    static let apiKey: String = "9afa41b681412a56a35f4b1a1f523adb"
+}
+
+/// Represent API requests.
+enum BreweryDBService<T: Codable & DataProtocol> {
+
+    /// Return all data.
+    case getData(id: String, params: [String:Any]?=nil)
+    case getList(page: Int=1, params: [String:Any]?=nil)
+    case getListFor(id: String, type: DataType, params: [String:Any]?=nil)
+    case search(searchString: String, params: [String:Any]?=nil)
     
-    static private let API_URL = "https://sandbox-api.brewerydb.com/v2"
-    static private let API_KEY = "9afa41b681412a56a35f4b1a1f523adb"
+    /// Search only breweries, max radius is 100 km. Returns Location data type.
+    case geo(latitude: Float, longitude: Float, radius: Int=100, params: [String:Any]?=nil)
     
-    case beer(beerIds: [String])
-    case beers(page: Int=1)
-    case search(type: typeOfData, searchString: String, page: Int=1)
-    case breweryBeer(type:typeOfData, breweryId: String)
-    case breweries(latitude: Float, longitude: Float)
 }
 
 extension BreweryDBService: TargetType {
+    
     var baseURL: URL {
         switch self {
         default:
-            return URL(string: BreweryDBService.API_URL)!
+            return URL(string: BreweryDB.apiUrl)!
         }
     }
     
     var path: String {
+        
         switch self {
+        case .getList(_, _):
+            return "/\(T.type.multiple)"
+        case .getData(let id, _):
+            return "/\(T.type.single)/\(id)" + ""
+        case .getListFor(let id, let type, _):
+            return "/\(T.type.single)/\(id)/\(type.multiple)"
         case .search:
             return "/search"
-        case .beer, .beers:
-            return "/beers"
-        case .breweryBeer(let typeOfData, let breweryId):
-            return "/\(typeOfData.rawValue)/\(breweryId)/beers"
-        case .breweries:
+        case .geo:
             return "/search/geo/point"
         }
     }
@@ -49,44 +61,38 @@ extension BreweryDBService: TargetType {
     var sampleData: Data {
         return Data()
     }
-    
+
     var task: Task {
-//        let authParams: [String: String] = ["key": BreweryDBService.API_KEY]
+        let authParams: [String: Any] = ["key": BreweryDB.apiKey] // Binary operator '+' cannot be applied to two '[String : Any]' operands
         let encoding = URLEncoding.default
         
         switch self {
             
-        case .beer(let ids):
-            return .requestParameters(parameters: ["key": BreweryDBService.API_KEY,
-                                                       "ids": ids.joined(separator: ",")],
+        case .getData(_, _), .getListFor(_, _, _):
+            return .requestParameters(parameters: authParams,
                                       encoding: encoding)
-            
-        case .beers(let page):
-            return .requestParameters(parameters: ["key": BreweryDBService.API_KEY,
+        case .getList(let page, _):
+            return .requestParameters(parameters: ["key": BreweryDB.apiKey,
                                                    "p": page],
+                                  encoding: encoding)
+        case .search(let searchString, _):
+            return .requestParameters(parameters: ["key": BreweryDB.apiKey,
+                                                   "type": T.type.single,
+                                                   "q": searchString],
                                       encoding: encoding)
-            
-        case .search(let type, let searchString, let page):
-            return .requestParameters(parameters: ["key": BreweryDBService.API_KEY,
-                                                   "type": type.rawValue,
-                                                   "q": searchString,
-                                                   "p": page],
-                                      encoding: encoding)
-            
-        case .breweries(let latitude, let longitude):
-            return .requestParameters(parameters: ["key": BreweryDBService.API_KEY,
+        case .geo(let latitude, let longitude, let radius, _):
+            return .requestParameters(parameters: ["key": BreweryDB.apiKey,
                                                    "lat": String(latitude),
                                                    "lng": String(longitude),
-                                                   "radius": 100],
-                                      encoding: encoding)
-
-        case .breweryBeer(_):
-            return .requestParameters(parameters: ["key": BreweryDBService.API_KEY],
+                                                   "radius": radius],
                                       encoding: encoding)
         }
+
+
     }
     
     var headers: [String : String]? {
         return ["Content-Type": "application/json"]
     }
 }
+

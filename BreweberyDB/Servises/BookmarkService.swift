@@ -11,6 +11,18 @@ import RxSwift
 import RxCocoa
 
 class BookmarkService<T: Codable & DataProtocol> {
+
+    public var bookmark: BehaviorRelay<Bool>
+
+    init() {
+        self.bookmark = BehaviorRelay<Bool>(value: false)
+    }
+    
+    internal init(data: T) {
+        self.bookmark = BehaviorRelay<Bool>(value: false)
+        self.bookmark.accept(self.get(data: data))
+    }
+    
     
     func searching(searchString: String) -> [T] {
         
@@ -40,8 +52,8 @@ class BookmarkService<T: Codable & DataProtocol> {
     
     func getBookmars() -> [T] {
         
-        let defaults = self._getDefaults()
-        let bm = defaults.object(forKey: T.type().rawValue) as? [NSDictionary] ?? [NSDictionary]()
+        let defaults = self.getDefaults()
+        let bm = defaults.object(forKey: T.type.single) as? [NSDictionary] ?? [NSDictionary]()
         var bookmarks:[T] = []
         bm.forEach { (val) in
             do {
@@ -53,18 +65,18 @@ class BookmarkService<T: Codable & DataProtocol> {
     
     func setBookmarks(bookmarks: [T]) -> Void {
         
-        let defaults = self._getDefaults()
+        let defaults = self.getDefaults()
         var newBookmarks: [NSDictionary] = []
         bookmarks.forEach{ val in
             do {
                 newBookmarks.append(try val.asDictionary() as NSDictionary)
             } catch { }
         }
-        defaults.setValue(newBookmarks, forKey: T.type().rawValue)
+        defaults.setValue(newBookmarks, forKey: T.type.single)
         
     }
     
-    private func _getDefaults() -> UserDefaults {
+    private func getDefaults() -> UserDefaults {
         
         return UserDefaults.standard
         

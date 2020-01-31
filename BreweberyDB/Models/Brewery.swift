@@ -9,13 +9,14 @@
 import Foundation
 
 struct Brewery: Codable & DataProtocol {
+    
     var id: String
     let name: String
     let nameShortDisplay: String?
     let description: String?
     let images: BreweryLabels?
     
-    static func type() -> typeOfData {
+    static var type: DataType {
         return .brewery
     }
 }

@@ -17,8 +17,8 @@ class BeerInfoViewController: UIViewController {
     @IBOutlet weak var descriptionLabel: UILabel!
     @IBOutlet weak var bookmarkButton: UIBarButtonItem!
 
-    private var _viewModel: BeerInfoViewModel!
-    var beer:Beer!
+    private var _viewModel: BeerInfoViewModel? = nil
+    var beer:Beer? = nil
     var updateListHandler: () -> () = {  }
 
     override func viewDidLoad() {
@@ -27,9 +27,9 @@ class BeerInfoViewController: UIViewController {
         super.viewDidLoad()
 
         self._viewModel = BeerInfoViewModel(data: beer)
-        self._showUpData()
-        self._configureImage()
-        self._configureBookmark()
+        self.showUpData()
+        self.configureImage()
+        self.configureBookmark()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -38,7 +38,7 @@ class BeerInfoViewController: UIViewController {
         
     }
     
-    private func _showUpData() {
+    private func showUpData() {
             
         navigationItem.title = self.beer?.name
         self.nameLabel.text = self.beer?.nameDisplay
@@ -47,20 +47,25 @@ class BeerInfoViewController: UIViewController {
         
     }
     
-    private func _configureBookmark() {
-
-        self._viewModel.bookmark.subscribe(onNext: { (val) in
-            self._viewModel.bookmarkService.set(data: self.beer, value: val)
-            self.bookmarkButton.image = UIImage(systemName: val ? "bookmark.fill" : "bookmark")
-        }).disposed(by: self._viewModel.disposeBag)
+    private func configureBookmark() {
         
-        self.bookmarkButton.rx.tap.asDriver().drive(onNext: {
-            self._viewModel.bookmark.accept(!self._viewModel.bookmark.value)
-        }).disposed(by: self._viewModel.disposeBag)
+        if let viewModel = self._viewModel,
+            let beer = self.beer{
+            
+            viewModel.bookmarkService.bookmark.subscribe(onNext: { (val) in
+                viewModel.bookmarkService.set(data: beer, value: val)
+                self.bookmarkButton.image = UIImage(systemName: val ? "bookmark.fill" : "bookmark")
+            }).disposed(by: viewModel.disposeBag)
+            
+            self.bookmarkButton.rx.tap.asDriver().drive(onNext: {
+                viewModel.bookmarkService.bookmark.accept(!viewModel.bookmarkService.bookmark.value)
+            }).disposed(by: viewModel.disposeBag)
+            
+        }
 
     }
     
-    private func _configureImage() -> Void {
+    private func configureImage() -> Void {
         // TODO: do smsthg with this
         if let labels = self.beer?.labels,
             let imageURLString = labels.large {

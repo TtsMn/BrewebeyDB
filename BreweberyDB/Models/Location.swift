@@ -15,7 +15,7 @@ class Location: Codable & DataProtocol {
     var description: String?
     let brewery: Brewery?
     
-    static func type() -> typeOfData {
+    static var type: DataType {
         return .location
     }
     

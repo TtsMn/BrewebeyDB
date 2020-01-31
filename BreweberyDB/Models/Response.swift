@@ -10,6 +10,8 @@ import Foundation
 
 struct Response<T: Codable>: Codable {
     let status: String
+    let message: String?
+    let errorMessage: String?
     let currentPage: Int?
     let numberOfPages: Int?
     let totalResults: Int?

@@ -15,8 +15,8 @@ class BreweryInfoViewController: UIViewController {
     @IBOutlet weak var tableView: UITableView!
     
     private let _cellReuseIdentifer = "breweryBeerCell"
-    private var _viewModel: BreweryInfoViewModel!
-    public var brewery: Brewery!
+    private var _viewModel: BreweryInfoViewModel? = nil
+    public var brewery: Brewery? = nil
     
     override func viewDidLoad() {
         guard let brewery = self.brewery else { return }
@@ -25,22 +25,25 @@ class BreweryInfoViewController: UIViewController {
         
         self._viewModel = BreweryInfoViewModel(breweryId: brewery.id)
         self.navigationItem.title = brewery.name
-        self._configureTableView()
-        self._configureImage()
+        self.configureTableView()
+        self.configureImage()
 
     }
 
-    private func _configureTableView() -> Void {
+    private func configureTableView() -> Void {
         
-        self._viewModel.data.bind(to: self.tableView.rx.items(cellIdentifier: self._cellReuseIdentifer, cellType: BreweryInfoTableViewCell.self)) { row, beer, cell in
-            cell.beer = beer
-            cell.ttlLabel?.text = beer.name
-            cell.configureImage()
-
-        }.disposed(by: self._viewModel.disposeBag)
+        if let viewModel = self._viewModel {
+            viewModel.data.bind(to: self.tableView.rx.items(cellIdentifier: self._cellReuseIdentifer, cellType: BreweryInfoTableViewCell.self)) { row, beer, cell in
+                cell.beer = beer
+                cell.ttlLabel?.text = beer.name
+                cell.configureImage()
+                
+            }.disposed(by: viewModel.disposeBag)
+        }
+        
     }
     
-    private func _configureImage() -> Void {
+    private func configureImage() -> Void {
         if let labels = self.brewery?.images,
             let imageURLString = labels.squareLarge {
             ImageProvider.image(url: imageURLString) { (image) in

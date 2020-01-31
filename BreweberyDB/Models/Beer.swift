@@ -11,12 +11,12 @@ import Foundation
 struct Beer: Codable & DataProtocol{
 
     var id: String          //The unique id of the beer.
-    var name: String        //The name of the beer.
-    var nameDisplay: String //Display name of the beer.
-    var description: String? //The description of the beer.
+    let name: String        //The name of the beer.
+    let nameDisplay: String //Display name of the beer.
+    let description: String? //The description of the beer.
     let labels: BeerLabels?      //If this object is set then labels exist and it will contain items icon, medium, and large that are URLs to the images.
     
-    static func type() -> typeOfData {
+    static var type: DataType {
         return .beer
     }
 }

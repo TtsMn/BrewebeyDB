@@ -21,11 +21,11 @@ class BreweryViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self._configureTableView()
+        self.configureTableView()
         
     }
     
-    private func _configureTableView() -> Void {
+    private func configureTableView() -> Void {
         
         self._breweryViewModel.data.bind(to: self.tableView.rx.items(cellIdentifier: self._cellReuseIdentifer, cellType: BreweryTableViewCell.self)) { row, brewery, cell in
             cell.brewery = brewery
