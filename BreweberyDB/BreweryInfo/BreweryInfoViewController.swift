@@ -44,13 +44,11 @@ class BreweryInfoViewController: UIViewController {
     }
     
     private func configureImage() -> Void {
-        if let labels = self.brewery?.images,
-            let imageURLString = labels.squareLarge {
-            ImageProvider.image(url: imageURLString) { (image) in
-                self.icon.image = image
-            }
+        if let imageURLString = self.brewery?.getImageUrl(size: .icon) {
+            ImageProvider.image(url: imageURLString, iv: self.icon)
         }
     }
+
     
     // MARK: - Navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {

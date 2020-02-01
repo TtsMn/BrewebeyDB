@@ -15,9 +15,34 @@ struct Beer: Codable & DataProtocol{
     let nameDisplay: String //Display name of the beer.
     let description: String? //The description of the beer.
     let labels: BeerLabels?      //If this object is set then labels exist and it will contain items icon, medium, and large that are URLs to the images.
+  
+}
+
+extension Beer {
     
     static var type: DataType {
         return .beer
+    }
+    
+    func getImageUrl(size: BeerImageSize) -> String? {
+        if let images = self.labels {
+            switch size {
+            case .icon:
+                return images.icon
+            case .medium:
+                return images.medium
+            case .large:
+                return images.large
+            case .contentAwareIcon:
+                return images.contentAwareIcon
+            case .contentAwareMedium:
+                return images.contentAwareMedium
+            case .contentAwareLarge:
+                return images.contentAwareLarge
+            }
+        } else {
+            return nil
+        }
     }
 }
 

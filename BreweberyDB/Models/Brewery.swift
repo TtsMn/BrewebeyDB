@@ -15,9 +15,32 @@ struct Brewery: Codable & DataProtocol {
     let nameShortDisplay: String?
     let description: String?
     let images: BreweryLabels?
+
+}
+
+extension Brewery {
     
     static var type: DataType {
         return .brewery
+    }
+    
+    func getImageUrl(size: BreweryImageSize) -> String? {
+        if let images = self.images {
+            switch size {
+            case .icon:
+                return images.icon
+            case .medium:
+                return images.medium
+            case .large:
+                return images.large
+            case .squareMedium:
+                return images.squareMedium
+            case .squareLarge:
+                return images.squareLarge
+            }
+        } else {
+            return nil
+        }
     }
 }
 

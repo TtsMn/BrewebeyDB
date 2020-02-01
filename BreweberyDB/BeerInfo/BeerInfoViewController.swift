@@ -66,15 +66,10 @@ class BeerInfoViewController: UIViewController {
     }
     
     private func configureImage() -> Void {
-        // TODO: do smsthg with this
-        if let labels = self.beer?.labels,
-            let imageURLString = labels.large {
-            
-            ImageProvider.image(url: imageURLString) { (image) in
-                self.icon.image = image
-            }
+        if let imageURLString = self.beer?.getImageUrl(size: .large) {
+            ImageProvider.image(url: imageURLString, iv: self.icon)
         }
     }
-
+    
 }
 

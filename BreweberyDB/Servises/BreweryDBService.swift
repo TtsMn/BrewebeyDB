@@ -46,7 +46,7 @@ extension BreweryDBService: TargetType {
         case .getData(let id, _):
             return "/\(T.type.single)/\(id)" + ""
         case .getListFor(let id, let type, _):
-            return "/\(T.type.single)/\(id)/\(type.multiple)"
+            return "/\(type.single)/\(id)/\(T.type.multiple)"
         case .search:
             return "/search"
         case .geo:

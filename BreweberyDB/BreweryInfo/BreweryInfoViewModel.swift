@@ -14,7 +14,7 @@ import Moya
 class BreweryInfoViewModel {
         
     public let disposeBag = DisposeBag()
-    private var _dataProvider = MoyaProvider<BreweryDBService<Brewery>>()
+    private var _dataProvider = MoyaProvider<BreweryDBService<Beer>>()
 //    private var _breweryDBProvider = BreweryDBProvider<Brewery>()
     public var data = BehaviorRelay<[Beer]>(value: [Beer]())
     
@@ -27,7 +27,7 @@ class BreweryInfoViewModel {
     public func request(breweryId: String) {
 
         self._dataProvider.rx
-            .request(.getListFor(id: breweryId, type: .beer))
+            .request(.getListFor(id: breweryId, type: .brewery))
             .filterSuccessfulStatusAndRedirectCodes()
             .map(Response<Beer>.self)
             .filter { $0.status=="success" }
