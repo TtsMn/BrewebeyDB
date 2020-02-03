@@ -134,22 +134,18 @@ class BeerViewModel<T: Codable & DataProtocol> {
                 self._dataProvider.rx.request(.getList(page: self.currentPage))
                     .filterSuccessfulStatusAndRedirectCodes()
                     .map(Response<T>.self)
-                    .filter { $0.status=="success" }
-                    .asObservable()
-                    .subscribe(onNext: { response in
-                    subscriptionHandler(response)
-                }).disposed(by: self.disposeBag)
+                    .subscribe(onSuccess: { (response) in
+                        subscriptionHandler(response)
+                    }).disposed(by: self.disposeBag)
                 
             } else {
                 
                 self._dataProvider.rx.request(.search(searchString: searchString))
                     .filterSuccessfulStatusAndRedirectCodes()
                     .map(Response<T>.self)
-                    .filter { $0.status=="success" }
-                    .asObservable()
-                    .subscribe(onNext: { response in
-                    subscriptionHandler(response)
-                }).disposed(by: self.disposeBag)
+                    .subscribe(onSuccess: { (response) in
+                        subscriptionHandler(response)
+                    }).disposed(by: self.disposeBag)
                 
             }
             
@@ -159,7 +155,7 @@ class BeerViewModel<T: Codable & DataProtocol> {
             if searchString.isEmpty {
                 response = self._bookmarkService.getBookmars()
             } else {
-                response = self._bookmarkService.searching(searchString: searchString)
+                response = self._bookmarkService.filter(searchString: searchString)
             }
             self.data.accept(response)
             

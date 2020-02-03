@@ -8,12 +8,14 @@
 
 import UIKit
 import RxSwift
+import Moya
 
 class BreweryInfoViewController: UIViewController {
     
     @IBOutlet weak var icon: UIImageView!
     @IBOutlet weak var tableView: UITableView!
     
+    private static let _provider = MoyaProvider<ImageService>()
     private let _cellReuseIdentifer = "breweryBeerCell"
     private var _viewModel: BreweryInfoViewModel? = nil
     public var brewery: Brewery? = nil
@@ -44,8 +46,14 @@ class BreweryInfoViewController: UIViewController {
     }
     
     private func configureImage() -> Void {
-        if let imageURLString = self.brewery?.getImageUrl(size: .icon) {
-            ImageProvider.image(url: imageURLString, iv: self.icon)
+        if let viewModel = self._viewModel,
+            let imageURLString = self.brewery?.getImageUrl(size: .squareLarge) {
+            BreweryInfoViewController._provider.rx
+                .request(.image(url: imageURLString), callbackQueue: DispatchQueue.main)
+                .mapImage()
+                .subscribe(onSuccess: { (image) in
+                    self.icon.image = image
+                }).disposed(by: viewModel.disposeBag)
         }
     }
 

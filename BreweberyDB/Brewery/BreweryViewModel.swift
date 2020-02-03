@@ -25,11 +25,11 @@ class BreweryViewModel {
         configureLocationManager()
         
     }
-        
+    
     func configureLocationManager() -> Void {
-       
+        
         let manager = CLLocationManager()
-
+        
         manager.requestWhenInUseAuthorization()
         manager.startUpdatingLocation()
         
@@ -40,23 +40,22 @@ class BreweryViewModel {
                 guard let location = location else { return }
                 
                 self._dataProvider.rx
-                        .request(.geo(latitude: Float(location.coordinate.latitude), longitude: Float(location.coordinate.longitude)))
-                        .filterSuccessfulStatusAndRedirectCodes()
-                        .map(Response<Location>.self)
-                        .filter { $0.status=="success" }
-                        .asObservable().subscribe(onNext: { (response) in
-
-                    if let data = response.data {
-                        var breweries = [Brewery]()
-                        data.forEach { (location) in
-                            if let brewery = location.brewery {
-                                breweries.append(brewery)
+                    .request(.geo(latitude: Float(location.coordinate.latitude), longitude: Float(location.coordinate.longitude)))
+                    .filterSuccessfulStatusAndRedirectCodes()
+                    .map(Response<Location>.self)
+                    .subscribe(onSuccess: { (response) in
+                        
+                        if let data = response.data {
+                            var breweries = [Brewery]()
+                            data.forEach { (location) in
+                                if let brewery = location.brewery {
+                                    breweries.append(brewery)
+                                }
                             }
+                            self.data.accept(breweries)
                         }
-                        self.data.accept(breweries)
-                    }
-                }).disposed(by: self._disposeBag)
-        }).disposed(by: self._disposeBag)
+                    }).disposed(by: self._disposeBag)
+            }).disposed(by: self._disposeBag)
         
     }
     

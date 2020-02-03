@@ -7,12 +7,16 @@
 //
 
 import UIKit
+import RxSwift
+import Moya
 
 class BeerTableViewCell: UITableViewCell {
     
     @IBOutlet weak var imageCell: UIImageView!
     @IBOutlet weak var ttlLabel: UILabel!
-
+    
+    private static let _provider = MoyaProvider<ImageService>()
+    private static let _disposeBag = DisposeBag()
     public var beer: Beer? = nil
     
     override func prepareForReuse() {
@@ -21,7 +25,12 @@ class BeerTableViewCell: UITableViewCell {
     
     public func configureImage() -> Void {
         if let imageURLString = self.beer?.getImageUrl(size: .icon) {
-            ImageProvider.image(url: imageURLString, iv: self.imageCell)
+            BeerTableViewCell._provider.rx
+                .request(.image(url: imageURLString), callbackQueue: DispatchQueue.main)
+                .mapImage()
+                .subscribe(onSuccess: { (image) in
+                    self.imageCell.image = image
+                }).disposed(by: BeerTableViewCell._disposeBag)
         }
     }
 }

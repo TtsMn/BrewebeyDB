@@ -24,7 +24,7 @@ class BookmarkService<T: Codable & DataProtocol> {
     }
     
     
-    func searching(searchString: String) -> [T] {
+    func filter(searchString: String) -> [T] {
         
         return self.getBookmars().filter {
             $0.name.contains(searchString)

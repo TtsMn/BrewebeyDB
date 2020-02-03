@@ -9,6 +9,7 @@
 import UIKit
 import RxSwift
 import RxCocoa
+import Moya
 
 class BeerInfoViewController: UIViewController {
 
@@ -16,7 +17,8 @@ class BeerInfoViewController: UIViewController {
     @IBOutlet weak var nameLabel: UILabel!
     @IBOutlet weak var descriptionLabel: UILabel!
     @IBOutlet weak var bookmarkButton: UIBarButtonItem!
-
+    
+    private static let _provider = MoyaProvider<ImageService>()
     private var _viewModel: BeerInfoViewModel? = nil
     var beer:Beer? = nil
     var updateListHandler: () -> () = {  }
@@ -66,8 +68,14 @@ class BeerInfoViewController: UIViewController {
     }
     
     private func configureImage() -> Void {
-        if let imageURLString = self.beer?.getImageUrl(size: .large) {
-            ImageProvider.image(url: imageURLString, iv: self.icon)
+        if let viewModel = self._viewModel,
+            let imageURLString = self.beer?.getImageUrl(size: .large) {
+            BeerInfoViewController._provider.rx
+                .request(.image(url: imageURLString), callbackQueue: DispatchQueue.main)
+                .mapImage()
+                .subscribe(onSuccess: { (image) in
+                    self.icon.image = image
+                }).disposed(by: viewModel.disposeBag)
         }
     }
     

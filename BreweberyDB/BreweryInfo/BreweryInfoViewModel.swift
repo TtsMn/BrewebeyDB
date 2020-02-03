@@ -30,9 +30,7 @@ class BreweryInfoViewModel {
             .request(.getListFor(id: breweryId, type: .brewery))
             .filterSuccessfulStatusAndRedirectCodes()
             .map(Response<Beer>.self)
-            .filter { $0.status=="success" }
-            .asObservable()
-            .subscribe(onNext: { response in
+            .subscribe(onSuccess: { (response) in
                 if let data = response.data {
                     self.data.accept(data)
                 }
